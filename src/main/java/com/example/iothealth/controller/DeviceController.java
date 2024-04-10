@@ -103,9 +103,7 @@ public class DeviceController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         try{
-                if(deviceService.assigned(deviceId)){
-                    deviceService.unassignDevice(deviceId);
-                }
+
                 UserDeviceResponse assignDeviceResult =  deviceService.removeDevice(deviceId);
                 return ResponseEntity.ok().body(assignDeviceResult);
         } catch (Exception e){

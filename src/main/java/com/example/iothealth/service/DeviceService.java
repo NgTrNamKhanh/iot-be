@@ -140,11 +140,42 @@ public class DeviceService {
         return reformatDeviceResponse(device);
     }
     public UserDeviceResponse removeDevice(UUID deviceId){
-        Optional<Device> existingDevice = deviceRepository.findById(deviceId);
-        Device device = existingDevice.get();
-        device.setOrganisation(null);
-        deviceRepository.save(device);
-        return reformatDeviceResponse(device);
+        if(assigned(deviceId)){
+            AuthResponse authResponse = authService.loginWithThingsBoard("tenant@thingsboard.org", "tenant");
+
+            CountDownLatch latch = new CountDownLatch(1);
+            UserDeviceResponse[] deviceResult = new UserDeviceResponse[1];
+            webClient.delete()
+                    .uri("/api/customer/device/{deviceId}", deviceId)
+                    .header("Authorization", "Bearer " + authResponse.getAccessToken())
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .subscribe(response -> {
+                        try {
+                            unassignedDeviceToUser(response);
+                            latch.countDown();
+                        } catch (JsonProcessingException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+            try {
+                latch.await();
+                Optional<Device> existingDevice = deviceRepository.findById(deviceId);
+                Device device = existingDevice.get();
+                device.setOrganisation(null);
+                deviceRepository.save(device);
+                return reformatDeviceResponse(device);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException(e);
+            }
+        }else{
+            Optional<Device> existingDevice = deviceRepository.findById(deviceId);
+            Device device = existingDevice.get();
+            device.setOrganisation(null);
+            deviceRepository.save(device);
+            return reformatDeviceResponse(device);
+        }
     }
     public void  unassignDevice(UUID deviceId){
         AuthResponse authResponse = authService.loginWithThingsBoard("tenant@thingsboard.org", "tenant");
