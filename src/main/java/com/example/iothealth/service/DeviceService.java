@@ -139,7 +139,14 @@ public class DeviceService {
         deviceRepository.save(device);
         return reformatDeviceResponse(device);
     }
-    public void unassignDevice(UUID deviceId){
+    public UserDeviceResponse removeDevice(UUID deviceId){
+        Optional<Device> existingDevice = deviceRepository.findById(deviceId);
+        Device device = existingDevice.get();
+        device.setOrganisation(null);
+        deviceRepository.save(device);
+        return reformatDeviceResponse(device);
+    }
+    public void  unassignDevice(UUID deviceId){
         AuthResponse authResponse = authService.loginWithThingsBoard("tenant@thingsboard.org", "tenant");
 
         CountDownLatch latch = new CountDownLatch(1);
@@ -156,7 +163,6 @@ public class DeviceService {
                     } catch (JsonProcessingException e) {
                         throw new RuntimeException(e);
                     }
-
                 });
         try {
             latch.await();

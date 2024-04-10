@@ -96,16 +96,27 @@ public class DeviceController {
             return ResponseEntity.internalServerError().body("Oop! Something went wrong. Please try again later.");
         }
     }
+    @PostMapping("/device/remove")
+    @PreAuthorize("hasAuthority('user')")
+    public ResponseEntity<?> removeDevice(@RequestParam("device_id") String idRequest){
+        UUID deviceId = UUID.fromString(idRequest);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        try{
+                if(deviceService.assigned(deviceId)){
+                    deviceService.unassignDevice(deviceId);
+                }
+                UserDeviceResponse assignDeviceResult =  deviceService.removeDevice(deviceId);
+                return ResponseEntity.ok().body(assignDeviceResult);
+        } catch (Exception e){
+            return ResponseEntity.internalServerError().body("Oop! Something went wrong. Please try again later.");
+        }
+    }
+
     @PreAuthorize("hasAuthority('user')")
     @PostMapping("/device/unassign")
     @Transactional
     public ResponseEntity<?> unassignDevice(@Valid @RequestBody AssignDeviceRequest assignDeviceRequest){
-//        UUID deviceId = UUID.fromString(assignDeviceRequest.getDevice_id());
-//        UUID ownerId = UUID.fromString(assignDeviceRequest.getOwner_id());
-//        System.out.println(deviceId);
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-//        return null;
         Optional<User> userOptional = userRepository.findUserByUsername(assignDeviceRequest.getOwner());
         UUID ownerId = userOptional.get().getId();
         try{
@@ -116,6 +127,7 @@ public class DeviceController {
                 return ResponseEntity.badRequest().body("User not found");
             }
             else {
+
                 deviceService.unassignDevice(assignDeviceRequest.getDevice_id());
                 return ResponseEntity.ok().body("Device has been unassigned");
             }
