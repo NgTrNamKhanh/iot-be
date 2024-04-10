@@ -85,6 +85,8 @@ public class DeviceController {
         try{
             if (deviceService.assigned(deviceId)){
                 return ResponseEntity.badRequest().body("This device is assigned already");
+            }else if (deviceService.assignedOrganisation(deviceId)){
+                return ResponseEntity.badRequest().body("This device is assigned to other organisation ");
             }
             else {
                 UserDeviceResponse assignDeviceResult =  deviceService.addDevice(deviceId, userDetails.getOrganisation());
@@ -108,7 +110,7 @@ public class DeviceController {
         UUID ownerId = userOptional.get().getId();
         try{
             if (!deviceService.assigned(assignDeviceRequest.getDevice_id())) {
-                return ResponseEntity.badRequest().body("This device is assigned already");
+                return ResponseEntity.badRequest().body("This device is unassigned already");
             }
             else if (!userRepository.existsById(ownerId)){
                 return ResponseEntity.badRequest().body("User not found");
@@ -125,6 +127,9 @@ public class DeviceController {
     @PreAuthorize("hasAuthority('user')")
     public ResponseEntity<?> editDevice(@RequestBody @Valid EditDeviceRequest editDeviceRequest) {
         try {
+            if(deviceService.existNameDevice(editDeviceRequest.getName())){
+                return ResponseEntity.badRequest().body("This device name already exist");
+            }
             UserDeviceResponse editDeviceResult = this.deviceService.editDevice(editDeviceRequest);
             return ResponseEntity.ok().body(editDeviceResult);
         } catch (Exception var3) {

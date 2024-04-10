@@ -238,6 +238,14 @@ public class DeviceService {
         Device checkAssigned = deviceRepository.assigned(deviceId).orElse(null);
         return checkAssigned != null;
     }
+    public boolean assignedOrganisation(UUID deviceId){
+        Device checkAssigned = deviceRepository.assignedOrganisation(deviceId).orElse(null);
+        return checkAssigned != null;
+    }
+    public boolean existNameDevice(String deviceName){
+        Device checkExist = deviceRepository.existNameDevice(deviceName).orElse(null);
+        return checkExist != null;
+    }
 
     public UserDeviceResponse reformatDeviceResponse(Device device){
         UserDeviceResponse userDeviceResponse = mapper.map(device, UserDeviceResponse.class);

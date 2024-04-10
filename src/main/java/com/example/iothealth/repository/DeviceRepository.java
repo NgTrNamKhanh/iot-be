@@ -28,6 +28,11 @@ public interface DeviceRepository extends JpaRepository<Device, UUID> {
 
     @Query("SELECT d FROM Device d WHERE d.id = :id AND d.owner IS NOT NULL")
     Optional<Device> assigned(@Param("id") UUID id);
+    @Query("SELECT d FROM Device d WHERE d.id = :id AND d.organisation IS NOT NULL")
+    Optional<Device> assignedOrganisation(@Param("id") UUID id);
+
+    @Query("SELECT d FROM Device d WHERE d.name = :deviceName")
+    Optional<Device> existNameDevice(@Param("deviceName") String deviceName);
 
     @Query("SELECT d FROM Device d WHERE d.is_active = true AND d.owner IS NOT NULL")
     List<Device> getActiveDevicesWithOwner();
