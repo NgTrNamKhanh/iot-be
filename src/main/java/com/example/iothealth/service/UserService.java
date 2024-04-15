@@ -303,9 +303,10 @@ public class UserService {
         }
     }
 
-@Scheduled(fixedRate = 300000)
+@Scheduled(fixedRate = 120000)
 public void synchronizeUsersFromThingsBoardCustomer(){
     System.out.println("Fetching users from ThingsBoard server...");
+    List<User> users = userRepository.findAll();
     AuthResponse authResponse = authService.loginWithThingsBoard("tenant@thingsboard.org", "tenant");
 
     AtomicInteger page = new AtomicInteger(0);
@@ -324,22 +325,24 @@ public void synchronizeUsersFromThingsBoardCustomer(){
             .bodyToMono(Map.class)
             .doOnError(e -> System.out.println("Error occurred: " + e.getMessage()));
 
+
         Map<String, Object> response = result.block();
 
         if (response == null || response.isEmpty()) {
             break;
         }
 
-        List<User> users = userRepository.findAll();
-
         // Process the response data...
         List<Map<String, Object>> data = (List<Map<String, Object>>) response.get("data");
         for (Map<String, Object> item : data) {
+            Map<String, String> idObject = (Map<String, String>) item.get("id");
+            String id = idObject.get("id");
             String email = (String) item.get("email");
 
             // Check if this user in ThingsBoard is not in database then add it to database
             if (users.stream().noneMatch(user -> user.getEmail().equals(email))) {
                 User user = new User();
+                user.setId(UUID.fromString(id));
                 user.setUsername((String) item.get("title"));
                 user.setEmail(email);
                 user.setMobile((String) item.get("phone"));
@@ -350,17 +353,6 @@ public void synchronizeUsersFromThingsBoardCustomer(){
                 user.setPassword(passwordEncoder.encode("password"));
                 user.setLast_updated(LocalDateTime.now());
                 userRepository.save(user);
-            }
-
-            // Check if this user in database is not in ThingsBoard then delete it from database
-            if (users.stream().noneMatch(user -> user.getEmail().equals(email))) {
-                // Exception for users in migration
-                if (!email.equals("longphgbh200168@fpt.edu.vn")
-                        && !email.equals("khanhntngch210731@fpt.edu.vn")
-                        && !email.equals("hungcuong28597@gmail.com")
-                        && !email.equals("andtrinh3189@gmail.com")){
-                    userRepository.delete(userRepository.findUserByEmail(email).orElseThrow());
-                }
             }
 
             // Check if this user in both ThingsBoard and database but updated in ThingsBoard then update it in database
