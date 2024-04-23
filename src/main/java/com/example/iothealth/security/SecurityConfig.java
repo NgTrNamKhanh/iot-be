@@ -63,6 +63,7 @@ public class SecurityConfig  {
                                 .requestMatchers("/api/health_objective-management/**").permitAll()
                                 .requestMatchers("/api/health_progress/**").permitAll()
                                 .requestMatchers("/api/chat/**").permitAll()
+                                .requestMatchers("/api/dashboard/**").permitAll()
                                 .anyRequest().authenticated()
                 );
         http.authenticationProvider(authenticationProvider());

@@ -27,4 +27,8 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     @Query("SELECT u from User u JOIN u.roles r WHERE r.name =:roleName")
     List<User> findUsersByRoleName(@Param("roleName") String roleName);
+
+    // Find users with specific health objective and organisation
+    @Query("SELECT u from User u WHERE u.health_objective.id =:healthObjectiveId AND u.organisation =:organisation")
+    List<User> findUsersByHealthObjectiveAndOrganisation(@Param("healthObjectiveId") Integer healthObjectiveId, @Param("organisation") Organisation organisation);
 }

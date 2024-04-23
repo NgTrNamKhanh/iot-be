@@ -1,6 +1,5 @@
 package com.example.iothealth.controller;
 
-import com.example.iothealth.domain.UserInfoDetails;
 import com.example.iothealth.model.User;
 import com.example.iothealth.payload.request.AssignDeviceRequest;
 import com.example.iothealth.payload.request.EditDeviceRequest;
@@ -17,8 +16,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import javax.sound.midi.SysexMessage;
-import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
 

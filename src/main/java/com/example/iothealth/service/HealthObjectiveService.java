@@ -1,9 +1,11 @@
 package com.example.iothealth.service;
 
 import com.example.iothealth.domain.HealthObjectiveDetails;
+import com.example.iothealth.domain.UserObjectiveData;
 import com.example.iothealth.exception.HealthRecordNotFoundException;
 import com.example.iothealth.model.HealthObjective;
 import com.example.iothealth.model.HealthRecord;
+import com.example.iothealth.model.Organisation;
 import com.example.iothealth.model.User;
 import com.example.iothealth.payload.request.AddHealthObjectiveRequest;
 import com.example.iothealth.repository.HealthObjectiveRepository;
@@ -77,6 +79,21 @@ public class HealthObjectiveService {
         System.out.println("Recommended Health Objectives: " + recommendedHealthObjectives.size());
         return recommendedHealthObjectives;
     }
+
+    // Get all health objectives with number of users chose health objective in a selected organization
+    public List<UserObjectiveData> getHealthObjectiveData(UUID userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new HealthRecordNotFoundException("User not found."));
+        Organisation organisation = user.getOrganisation();
+        List<HealthObjective> healthObjectives = healthObjectiveRepository.findAll();
+        List<UserObjectiveData> userObjectiveData = new ArrayList<>();
+        for (HealthObjective healthObjective : healthObjectives) {
+            Integer numberOfUsers = userRepository.findUsersByHealthObjectiveAndOrganisation(healthObjective.getId(), organisation).size();
+            userObjectiveData.add(new UserObjectiveData(healthObjective.getTitle(), numberOfUsers));
+        }
+        return userObjectiveData;
+    }
+
+
 
     private boolean isWithinRange(double value, double min, double max) {
         return value >= min && value <= max;
