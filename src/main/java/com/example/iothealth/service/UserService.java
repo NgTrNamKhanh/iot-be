@@ -303,7 +303,7 @@ public class UserService {
         }
     }
 
-@Scheduled(fixedRate = 120000)
+@Scheduled(fixedRate = 60000)
 public void synchronizeUsersFromThingsBoardCustomer(){
     System.out.println("Fetching users from ThingsBoard server...");
     List<User> users = userRepository.findAll();
@@ -351,15 +351,6 @@ public void synchronizeUsersFromThingsBoardCustomer(){
                 user.setOrganisation(organisationRepository.findOrganisationByName("Toshiba").orElseThrow());
                 user.setRoles(Set.of(roleRepository.findRoleByName("user").orElseThrow()));
                 user.setPassword(passwordEncoder.encode("password"));
-                user.setLast_updated(LocalDateTime.now());
-                userRepository.save(user);
-            }
-
-            // Check if this user in both ThingsBoard and database but updated in ThingsBoard then update it in database
-            if (users.stream().anyMatch(user -> user.getEmail().equals(email))) {
-                User user = userRepository.findUserByEmail(email).orElseThrow();
-                user.setUsername((String) item.get("title"));
-                user.setMobile((String) item.get("phone"));
                 user.setLast_updated(LocalDateTime.now());
                 userRepository.save(user);
             }
