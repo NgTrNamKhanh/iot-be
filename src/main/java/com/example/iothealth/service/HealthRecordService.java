@@ -226,10 +226,14 @@ public class HealthRecordService {
         int countTemperature = 0;
         for (Map<String, Object> entry : temperatureData) {
             Object temperatureValueObj = entry.get("value");
-            if (temperatureValueObj instanceof Number) {
-                double temperatureValue = ((Number) temperatureValueObj).doubleValue();
-                sumTemperature += temperatureValue;
-                countTemperature++;
+            if (temperatureValueObj instanceof String) {
+                try {
+                    double temperatureValue = Double.parseDouble((String) temperatureValueObj);
+                    sumTemperature += temperatureValue;
+                    countTemperature++;
+                } catch (NumberFormatException e) {
+                    System.err.println("Invalid temperature value: " + temperatureValueObj);
+                }
             }
         }
         double averageTemperature = countTemperature > 0 ? sumTemperature / countTemperature : 0.0;
@@ -242,10 +246,14 @@ public class HealthRecordService {
         int countBloodPressure = 0;
         for (Map<String, Object> entry : bloodPressureData) {
             Object bloodPressureValueObj = entry.get("value");
-            if (bloodPressureValueObj instanceof Number) {
-                double bloodPressureValue = ((Number) bloodPressureValueObj).doubleValue();
-                sumBloodPressure += bloodPressureValue;
-                countBloodPressure++;
+            if (bloodPressureValueObj instanceof String) {
+                try {
+                    double bloodPressureValue = Double.parseDouble((String) bloodPressureValueObj);
+                    sumBloodPressure += bloodPressureValue;
+                    countBloodPressure++;
+                } catch (NumberFormatException e) {
+                    System.err.println("Invalid blood pressure value: " + bloodPressureValueObj);
+                }
             }
         }
         double averageBloodPressure = countBloodPressure > 0 ? sumBloodPressure / countBloodPressure : 0.0;
@@ -258,12 +266,18 @@ public class HealthRecordService {
         int countHeartRate = 0;
         for (Map<String, Object> entry : heartRateData) {
             Object heartRateValueObj = entry.get("value");
-            if (heartRateValueObj instanceof Number) {
-                double heartRateValue = ((Number) heartRateValueObj).doubleValue();
-                sumHeartRate += heartRateValue;
-                countHeartRate++;
+            if (heartRateValueObj instanceof String) {
+                try {
+                    double heartRateValue = Double.parseDouble((String) heartRateValueObj);
+                    sumHeartRate += heartRateValue;
+                    countHeartRate++;
+                } catch (NumberFormatException e) {
+                    // Handle invalid string format for heart rate value
+                    System.err.println("Invalid heart rate value: " + heartRateValueObj);
+                }
             }
         }
+
         double averageHeartRate = countHeartRate > 0 ? sumHeartRate / countHeartRate : 0.0;
         healthRecord.setHeart_rate((int) Math.floor(averageHeartRate));
         System.out.println("Average Heart Rate: " + averageHeartRate);

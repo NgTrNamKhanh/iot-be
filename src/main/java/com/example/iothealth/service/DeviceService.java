@@ -345,6 +345,9 @@ public class DeviceService {
                                 existingDevice.setDevice_profile_name(device.getDevice_profile_name());
                                 existingDevice.setAdditional_info(device.getAdditional_info());
                                 existingDevice.setOwner(device.getOwner());
+                                if(device.getOwner() != null){
+                                    existingDevice.setOrganisation(device.getOwner().getOrganisation());
+                                }
                                 deviceRepository.save(existingDevice);
                             }
                         }
