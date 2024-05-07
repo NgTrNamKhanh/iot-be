@@ -119,7 +119,6 @@ public class UserService {
             latch.await(); // Wait for the latch to be counted down
             return userResult[0]; // Return the created user
         } catch (InterruptedException e) {
-            System.out.println("Lock 4");
             Thread.currentThread().interrupt();
             throw new RuntimeException(e);
         }
@@ -191,52 +190,55 @@ public class UserService {
                 if (!userRoles.contains(adminRole)){
                     Customer customer = new Customer();
 
-                    webClient.get()
+                    System.out.println("Username: " + addEditUserRequest.getUsername());
+
+                    String response = webClient.get()
                             .uri("/api/customer/" + userId)
                             .header("Authorization", "Bearer " + authResponse.getAccessToken())
                             .retrieve()
                             .bodyToMono(String.class)
-                            .subscribe(response -> {
-                                try {
-                                    ObjectMapper objectMapper = new ObjectMapper();
-                                    Map<String, Object> customerDetails = objectMapper.readValue(response, Map.class);
+                            .block();
 
-                                    customer.setId(customerId);
-                                    customer.setTitle(addEditUserRequest.getUsername());
-                                    customer.setPhone(addEditUserRequest.getMobile());
-                                    customer.setEmail(addEditUserRequest.getEmail());
-                                    customer.setName(addEditUserRequest.getUsername());
+                    try {
+                        ObjectMapper objectMapper = new ObjectMapper();
+                        Map<String, Object> customerDetails = objectMapper.readValue(response, Map.class);
 
-                                    Long createdTime = (Long) customerDetails.get("createdTime");
-                                    customer.setCreatedTime(createdTime);
+                        customer.setId(customerId);
+                        customer.setTitle(addEditUserRequest.getUsername());
+                        customer.setPhone(addEditUserRequest.getMobile());
+                        customer.setEmail(addEditUserRequest.getEmail());
+                        customer.setName(addEditUserRequest.getUsername());
 
-                                    Map<String, Object> additionalInfo = (Map<String, Object>) customerDetails.get("additionalInfo");
-                                    if (additionalInfo != null) {
-                                        List<String> emergencyEmails = (List<String>) additionalInfo.get("emergencyEmail");
-                                        customer.setAdditionalInfo(new AdditionalInfo(emergencyEmails));
-                                    }
+                        Long createdTime = (Long) customerDetails.get("createdTime");
+                        customer.setCreatedTime(createdTime);
 
-                                    String country = (String) customerDetails.get("country");
-                                    customer.setCountry(country);
-                                    String state = (String) customerDetails.get("state");
-                                    customer.setState(state);
+                        Map<String, Object> additionalInfo = (Map<String, Object>) customerDetails.get("additionalInfo");
+                        if (additionalInfo != null) {
+                            List<String> emergencyEmails = (List<String>) additionalInfo.get("emergencyEmail");
+                            customer.setAdditionalInfo(new AdditionalInfo(emergencyEmails));
+                        }
 
-                                    Map<String, Object> tenantId = (Map<String, Object>) customerDetails.get("tenantId");
-                                    String tenantEntityType = (String) tenantId.get("entityType");
-                                    String tenantIdValue = (String) tenantId.get("id");
-                                    customer.setTenantId(new TenantId(tenantEntityType, tenantIdValue));
+                        String country = (String) customerDetails.get("country");
+                        customer.setCountry(country);
+                        String state = (String) customerDetails.get("state");
+                        customer.setState(state);
 
-                                    String externalId = (String) customerDetails.get("externalId");
-                                    customer.setExternalId(externalId);
+                        Map<String, Object> tenantId = (Map<String, Object>) customerDetails.get("tenantId");
+                        String tenantEntityType = (String) tenantId.get("entityType");
+                        String tenantIdValue = (String) tenantId.get("id");
+                        customer.setTenantId(new TenantId(tenantEntityType, tenantIdValue));
 
-                                    System.out.println("Inner Customer: " + customer);
+                        String externalId = (String) customerDetails.get("externalId");
+                        customer.setExternalId(externalId);
 
-                                } catch (JsonProcessingException e) {
-                                    throw new RuntimeException(e);
-                                }
-                            });
+                        System.out.println("Inner Customer: " + customer);
+
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException(e);
+                    }
 
                     System.out.println("Outer Customer: " + customer);
+
 
                     webClient.post()
                             .uri("/api/customer")
@@ -353,6 +355,19 @@ public void synchronizeUsersFromThingsBoardCustomer(){
                 user.setPassword(passwordEncoder.encode("password"));
                 user.setLast_updated(LocalDateTime.now());
                 userRepository.save(user);
+            }
+
+            // Check if this user has name or mobile in ThingsBoard is different from database then update it
+            Optional<User> existingUser = userRepository.findUserByEmail(email);
+            if (existingUser.isPresent()) {
+                User user = existingUser.get();
+                if (!user.getUsername().equals(item.get("title")) || !user.getMobile().equals(item.get("phone"))) {
+                    System.out.println("Updating user: " + user.getEmail());
+                    user.setUsername((String) item.get("title"));
+                    user.setMobile((String) item.get("phone"));
+                    user.setLast_updated(LocalDateTime.now());
+                    userRepository.save(user);
+                }
             }
         }
 
