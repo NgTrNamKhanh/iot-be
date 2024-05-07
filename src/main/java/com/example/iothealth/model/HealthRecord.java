@@ -21,7 +21,7 @@ public class HealthRecord {
     private int heart_rate;
 
     @Column
-    private int blood_pressure;
+    private Integer blood_pressure;
 
     @Column
     private float temperature;

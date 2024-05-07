@@ -313,7 +313,6 @@ public class HealthRecordService {
             result.subscribe(response -> {
                 Map<String, Object> apiResponse = (Map<String, Object>) response;
                 HealthRecord healthRecord = mapApiResponseToHealthRecord(apiResponse);
-                System.out.println("Health: " + healthRecord.getTemperature());
                 healthRecord.setUser(device.getOwner());
                 healthRecordRepository.save(healthRecord);
             });
