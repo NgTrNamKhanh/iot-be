@@ -221,7 +221,7 @@ public class HealthRecordService {
         healthRecord.setLast_updated(LocalDateTime.now());
 
         // Extract and calculate average temperature
-        List<Map<String, Object>> temperatureData = (List<Map<String, Object>>) apiResponse.get("temperature");
+        List<Map<String, Object>> temperatureData = (List<Map<String, Object>>) apiResponse.get("Temperature");
         double sumTemperature = 0.0;
         int countTemperature = 0;
         for (Map<String, Object> entry : temperatureData) {
@@ -286,15 +286,15 @@ public class HealthRecordService {
     }
 
     // Fetch and save data from ThingsBoard every 1 minutes
-    @Scheduled(fixedRate = 3600000) // Fetch data every one hour
+    @Scheduled(fixedRate = 60000) // Fetch data every one hour
     public void fetchHealthRecord() {
         AuthResponse authResponse = authService.loginWithThingsBoard("tenant@thingsboard.org", "tenant");
         List<Device> devices = deviceRepository.getActiveDevicesWithOwner();
         System.out.println("Devices: " + devices.size());
 
-        // Calculate start and end timestamps for the last hour
+        // Calculate start and end timestamps for the last minute
         long endTs = Instant.now().toEpochMilli();
-        long startTs = Instant.now().minus(1, ChronoUnit.HOURS).toEpochMilli();
+        long startTs = Instant.now().minus(1, ChronoUnit.MINUTES).toEpochMilli();
 
         for (Device device : devices) {
             System.out.println("device: " + device.getId());
