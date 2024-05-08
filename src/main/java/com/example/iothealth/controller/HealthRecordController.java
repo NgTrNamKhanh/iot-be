@@ -33,11 +33,10 @@ public class HealthRecordController {
     private final HealthRecordService healthRecordService;
 
     @GetMapping("/health_record")
-    public ResponseEntity<?> getCurrentHealthRecordForUser(){
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+    public ResponseEntity<?> getLatestHealthRecordForUser(@RequestParam("id") String id){
+        UUID userId = UUID.fromString(id);
         try {
-            Optional<User> currentUser = userRepository.findById(userDetails.getId());
+            Optional<User> currentUser = userRepository.findById(userId);
             if (currentUser.isEmpty()){
                 return ResponseEntity.internalServerError().body("Oops! The server encountered an error. Please try again later");
             }
